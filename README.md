@@ -17,5 +17,5 @@ We are actively uploading the modules according to the following schedule:
 * [ ] **MAC Protocols:** Comparative baselines including MobiU-MAC, DR-DLMA, and DL-MAC.
 * [ ] **Main Program:** Main execution script (`main.py`).
 * [ ] **Experiment Configurations:** A complete set of `.json` files for different experiment scenarios.
-* [ ] **Training Scripts:** Scripts for model training and optimization.
+* [ ] **Training & Evaluation Scripts:** Scripts for training intelligent MAC protocols (agents) and performance evaluation.
 * [ ] **Visualization Tools:** Result analysis and plotting scripts.
