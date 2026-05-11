@@ -1,0 +1,105 @@
+{
+    "case": "Case3_D5",
+    "description":"Hybrid scenario combining Case2 (ALOHA) and Case1 (TDMA). Agent delay is 5 slots.",
+    "environment": {
+        "slot_size": 0.1,
+        "prop_speed": 1500,
+        "space":{
+            "x": 1000,
+            "y": 1000,
+            "z": 100
+        }
+    },
+    "nodes": [
+        {
+            "type": "TDMA",
+            "place": {
+                "0": {
+                    "delay": 0,
+                    "coord": []
+                }
+            },
+            "strategy": {
+                "0": {
+                    "rand":[1,10],
+                    "fixed": []
+                }
+            }
+        },
+        {
+            "type": "TDMA",
+            "place": {
+                "0": {
+                    "delay": 0,
+                    "coord": []
+                }
+            },
+            "strategy": {
+                "0": {
+                    "rand":[1,10],
+                    "fixed": []
+                }
+            }
+        },
+        {
+            "type": "TDMA",
+            "place": {
+                "0": {
+                    "delay": 0,
+                    "coord": []
+                }
+            },
+            "strategy": {
+                "0": {
+                    "rand":[1,10],
+                    "fixed": []
+                }
+            }
+        },
+        {
+            "type": "TDMA",
+            "place": {
+                "0": {
+                    "delay": 0,
+                    "coord": []
+                }
+            },
+            "strategy": {
+                "0": {
+                    "rand":[2,10],
+                    "fixed": []
+                }
+            }
+        },
+        {
+            "type": "ALOHA",
+            "place": {
+                "0": {
+                    "delay": 0,
+                    "coord": []
+                }
+            },
+            "strategy": {
+                "0": 0.2
+            }
+        }
+    ],
+    "agents": [
+        {
+            "type": "MobiU-MAC",
+            "speed": 0.0,
+            "place": {
+                "0": {
+                    "delay": 5,
+                    "coord": []
+                }
+            }
+        }
+    ],
+    "targets":{
+        "padding": false,
+        "goals":[
+            
+        ]
+    }
+}

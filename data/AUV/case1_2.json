@@ -1,0 +1,93 @@
+{
+    "case": "Case1_2",
+    "description":"Testing AUV mobility at 2 m/s based on Case1.",
+    "environment": {
+        "slot_size": 0.1,
+        "prop_speed": 1500,
+        "space":{
+            "x": 1000,
+            "y": 1000,
+            "z": 100
+        }
+    },
+    "nodes": [
+        {
+            "type": "TDMA",
+            "place": {
+                "0": {
+                    "delay": 0,
+                    "coord": []
+                }
+            },
+            "strategy": {
+                "0": {
+                    "rand":[1,10],
+                    "fixed": []
+                }
+            }
+        },
+        {
+            "type": "TDMA",
+            "place": {
+                "0": {
+                    "delay": 0,
+                    "coord": []
+                }
+            },
+            "strategy": {
+                "0": {
+                    "rand":[1,10],
+                    "fixed": []
+                }
+            }
+        },
+        {
+            "type": "TDMA",
+            "place": {
+                "0": {
+                    "delay": 0,
+                    "coord": []
+                }
+            },
+            "strategy": {
+                "0": {
+                    "rand":[1,10],
+                    "fixed": []
+                }
+            }
+        },
+        {
+            "type": "TDMA",
+            "place": {
+                "0": {
+                    "delay": 0,
+                    "coord": []
+                }
+            },
+            "strategy": {
+                "0": {
+                    "rand":[2,10],
+                    "fixed": []
+                }
+            }
+        }
+    ],
+    "agents": [
+        {
+            "type": "MobiU-MAC",
+            "speed": 2.0,
+            "place": {
+                "0": {
+                    "delay": 5,
+                    "coord": [480, 480, 10]
+                }
+            }
+        }
+    ],
+    "targets":{
+        "padding": true,
+        "goals":[
+            
+        ]
+    }
+}

@@ -1,0 +1,45 @@
+{
+    "case": "Case2",
+    "description":"Single ALOHA node with transmission probability of 0.2 per slot; distance to AP is randomly generated.",
+    "environment": {
+        "slot_size": 0.1,
+        "prop_speed": 1500,
+        "space":{
+            "x": 1000,
+            "y": 1000,
+            "z": 100
+        }
+    },
+    "nodes": [
+        {
+            "type": "ALOHA",
+            "place": {
+                "0": {
+                    "delay": 0,
+                    "coord": []
+                }
+            },
+            "strategy": {
+                "0": 0.2
+            }
+        }
+    ],
+    "agents": [
+        {
+            "type": "MobiU-MAC",
+            "speed": 0.0,
+            "place": {
+                "0": {
+                    "delay": 5,
+                    "coord": [480, 480, 10]
+                }
+            }
+        }
+    ],
+    "targets":{
+        "padding": false,
+        "goals":[
+            
+        ]
+    }
+}
