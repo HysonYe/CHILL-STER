@@ -13,9 +13,9 @@ The complete codebase, including the simulation environment and DRL algorithms, 
 We are actively uploading the modules according to the following schedule:
 
 - ✅ **Core Algorithms:** Implementation of CHILL-Return and STER.
-* [ ] **Simulation Environment:** The underwater acoustic network (UWAN) simulator.
-* [ ] **MAC Protocols:** Comparative baselines including MobiU-MAC, DR-DLMA, and DL-MAC.
-* [ ] **Main Program:** Main execution script (`main.py`).
-* [ ] **Experiment Configurations:** A complete set of `.json` files for different experiment scenarios.
-* [ ] **Training & Evaluation Scripts:** Scripts for training intelligent MAC protocols (agents) and performance evaluation.
-* [ ] **Visualization Tools:** Result analysis and plotting scripts.
+- ⬜ **Simulation Environment:** The underwater acoustic network (UWAN) simulator.
+- ⬜ **MAC Protocols:** Comparative baselines including MobiU-MAC, DR-DLMA, and DL-MAC.
+- ⬜ **Main Program:** Main execution script (`main.py`).
+- ⬜ **Experiment Configurations:** A complete set of `.json` files for different experiment scenarios.
+- ⬜ **Training & Evaluation Scripts:** Scripts for training intelligent MAC protocols (agents) and performance evaluation.
+- ⬜ **Visualization Tools:** Result analysis and plotting scripts.
