@@ -19,3 +19,28 @@ We are actively uploading the modules according to the following schedule:
 - ⬜ **Experiment Configurations:** A complete set of `.json` files for different experiment scenarios.
 - ⬜ **Training & Evaluation Scripts:** Scripts for training intelligent MAC protocols (agents) and performance evaluation.
 - ⬜ **Visualization Tools:** Result analysis and plotting scripts.
+
+## 📝 Citation
+
+If you use this code or the MobiU-MAC protocol in your research, please cite:
+
+H. Ye, X. Ye, and L. Fu, "Delay-Robust Deep Reinforcement Learning for Ranging-Free Channel Access under Mobility in Underwater Acoustic Networks," *arXiv preprint arXiv:2605.06536*, 2026.
+
+### BibTeX
+
+```bibtex
+@article{ye2026mobiu,
+  title={Delay-Robust Deep Reinforcement Learning for Ranging-Free Channel Access under Mobility in Underwater Acoustic Networks},
+  author={Ye, Huaisheng and Ye, Xiaowen and Fu, Liqun},
+  journal={arXiv preprint arXiv:2605.06536},
+  year={2026}
+}
+```
+
+## 📬 Contact
+
+**Author:** Huaisheng Ye ([yepeanut@foxmail.com](mailto:yepeanut@foxmail.com))
+
+## ⚖️ License
+
+This project is licensed under the **Apache License 2.0**.
