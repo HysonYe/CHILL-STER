@@ -2,6 +2,8 @@
 
 This repository is the official implementation of the paper **"Delay-Robust Deep Reinforcement Learning for Ranging-Free Channel Access under Mobility in Underwater Acoustic Networks"**, submitted to **IEEE Globecom 2026**.
 
+The preprint is available on **arXiv**: [https://arxiv.org/abs/2605.06536](https://arxiv.org/abs/2605.06536).
+
 ## 📢 Repository Status: Under Maintenance
 
 **Important Notice:** We have recently completed the paper submission. The source code is currently being refactored and cleaned up to ensure high readability and full reproducibility.
