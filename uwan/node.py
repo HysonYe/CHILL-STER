@@ -78,10 +78,10 @@ class Node:
         return access_decision, send_packet
 
     def step(self, downlink_packets=None):
-        self._apply_scheduled_pos() # Update position and delay based on deployment strategy
         self._auv_step()            # Update position and delay based on mobility model
         ack_frame = None
         if self.mac_protocol:       # Execute protocol logic and obtain feedback/ACK frames
             ack_frame = self.mac_protocol.step(downlink_packets)
         self._t += 1
+        self._apply_scheduled_pos() # Update position and delay based on deployment strategy
         return ack_frame
