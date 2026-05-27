@@ -8,7 +8,7 @@ The preprint is available on **arXiv**: [https://arxiv.org/abs/2605.06536](https
 
 **Important Notice:** We have recently completed the paper submission. The source code is currently being refactored and cleaned up to ensure high readability and full reproducibility.
 
-The complete codebase, including the simulation environment and DRL algorithms, is scheduled to be released by **~~May 11, 2026~~ May 25, 2026**. Please "Star" or "Watch" this repository for updates.
+The complete codebase was originally scheduled to be released by ~~May 25, 2026~~. We have already uploaded the core algorithms and partial simulation code. As we are moving forward with our next work, the remaining modules will be released incrementally. Thank you for your patience, and please "Star" or "Watch" this repository for updates.
 
 ## 🛠 Development Roadmap (TODO List)
 
