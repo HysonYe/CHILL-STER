@@ -43,8 +43,6 @@ class AUVMobilityRMP:
         self._cur_waypoint_idx = -1
         self._is_finished = False
 
-        self.reset()
-
     def reset(self):
         self._pos = self._initial_pos
         self._cur_waypoint_idx = -1
@@ -56,6 +54,14 @@ class AUVMobilityRMP:
 
     def get_position(self):
         return list(self._pos)
+
+    def get_speed(self):
+        if self._speed < 1e-5:
+            return 0.0
+        return self._speed
+
+    def set_speed(self, speed):
+        self._speed = max(speed, 1e-6)
 
     def _gen_random_waypoint(self):
         space_l, space_w, space_d = self._space['x'], self._space['y'], self._space['z']
