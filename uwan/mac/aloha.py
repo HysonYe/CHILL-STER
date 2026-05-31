@@ -19,3 +19,4 @@ class ALOHA(BaseMAC):
         next_t = self._node._t + 1
         if str(next_t) in self._prob_q_strategy.keys():
             self._prob_q = self._prob_q_strategy[str(next_t)]
+        return {}

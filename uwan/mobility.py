@@ -1,27 +1,6 @@
 import numpy as np
 import copy
-
-def randpoint_on_space(center, length, width, depth):
-    '''
-    Randomly sample a point inside a specified 3D rectangular space.
-
-    Args:
-        center (Tuple[float, float, float]): Center coordinates of the space (x, y, z).
-        length (float): Length of the space along the x-axis.
-        width (float): Width of the space along the y-axis.
-        depth (float): Depth extent along the positive z direction from the center's z.
-
-    Returns:
-        Tuple[float, float, float]: Coordinates of the sampled point (rounded to 3 decimals).
-    '''
-    if length <= 0 or width <= 0 or depth <= 0:
-        raise ValueError("length, width, and depth must be positive numbers.")
-    
-    x = np.random.uniform(center[0] - length / 2, center[0] + length / 2)
-    y = np.random.uniform(center[1] - width / 2, center[1] + width / 2)
-    z = np.random.uniform(center[2], center[2] + depth)
-
-    return (round(x,3), round(y,3), round(z,3))
+from uwan.utils import randpoint_on_space
 
 class AUVMobilityRMP:
     '''
@@ -55,7 +34,8 @@ class AUVMobilityRMP:
     def get_position(self):
         return list(self._pos)
 
-    def get_speed(self):
+    @property
+    def speed(self):
         if self._speed < 1e-5:
             return 0.0
         return self._speed

@@ -1,7 +1,7 @@
 from uwan.utils import unpack_place_info, get_delay_slot
 from uwan.mac.base_mac import BaseMAC
 from mobility import AUVMobilityRMP
-from infra.environment import COORD_ORDER, AP_COORD
+from infra.environment import COORD_ORDER, AP_COORD, MacReturn
 import numpy as np
 import copy
 
@@ -81,14 +81,14 @@ class Node:
             }
         return access_decision, send_packet
 
-    def step(self, downlink_packets=None):
+    def step(self, downlink_packets=None) -> MacReturn:
         self._auv_step()            # Update position and delay based on mobility model
-        ack_frame = None
+        ret = {}
         if self.mac_protocol:       # Execute protocol logic and obtain feedback/ACK frames
-            ack_frame = self.mac_protocol.step(downlink_packets)
+            ret = self.mac_protocol.step(downlink_packets)
         self._t += 1
         self._apply_scheduled_pos() # Update position and delay based on deployment strategy
-        return ack_frame
+        return ret
 
 class AccessPoint():
     '''

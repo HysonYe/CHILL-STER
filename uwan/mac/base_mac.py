@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from uwan.node import Node
+from uwan.nodes import Node
 
 class BaseMAC(ABC):
     def __init__(self, protocol_type: str):

@@ -44,3 +44,4 @@ class TDMA(BaseMAC):
         if str(next_t) in self._slot_strategy.keys():
             new_strategy = self._slot_strategy[str(next_t)]
             self._update_strategy(new_strategy)
+        return {}
