@@ -11,7 +11,7 @@ class ReplayMemory:
         self._memory = torch.zeros((self._memory_size, self._state_size * 2 + 2), device=self._device)
         self._memory_counter = 0
 
-    def store_transition(self, state, action, reward, next_state):
+    def push(self, state, action, reward, next_state):
         combined = list(state) + [action, reward] + list(next_state)
         trans_tensor = torch.tensor(combined, dtype=torch.float32, device=self._device)
         
@@ -30,3 +30,6 @@ class ReplayMemory:
         next_states = samples[:, -self._state_size:]
 
         return states, actions, rewards, next_states
+
+    def __len__(self):
+        return min(self._memory_counter, self._memory_size)
