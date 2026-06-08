@@ -10,10 +10,15 @@ class BaseAgent(ABC):
     '''
     def __init__(self, gamma):
         self._gamma = gamma
+        self.delay_aware = False
         self.t = 0
 
     def next_step(self):
         self.t += 1
+
+    @property
+    def request_measure_delay(self):
+        return False
 
     # Abstract methods: concrete subclasses must implement these
     @abstractmethod
@@ -21,7 +26,7 @@ class BaseAgent(ABC):
         pass
 
     @abstractmethod
-    def update_delay(self, observation = None, ref_delay = -1):
+    def update_delay(self, observation = None, delay_info = {}):
         pass
 
     @abstractmethod

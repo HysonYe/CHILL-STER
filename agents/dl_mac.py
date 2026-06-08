@@ -3,7 +3,6 @@ from agents.base_agent import BaseAgent
 from agents.common.brain import DQN
 from agents.common.memory import ReplayMemory
 from infra.environment import ACK_STATE, NODE_ACT, OBS_ORDER
-from infra.utils.tools import get_autocast_dtype
 import copy
 import torch
 
@@ -31,7 +30,6 @@ class DLMAC(BaseAgent):
         # Calculate state and action space dimensions
         self._act_idx = OBS_ORDER.index('act')
         self._ack_idx = OBS_ORDER.index('ack')
-        self._amp_dtype = get_autocast_dtype(self._device)
         if self._async_mode:
             # For async-DL-MAC, the action space includes picking one slot to transmit within
             # the current decision interval, or choosing not to transmit (WAIT).
@@ -57,13 +55,14 @@ class DLMAC(BaseAgent):
         self._cur_obs = [0,0]                   # Current slot observations (act and ack)
         self.t = 0
 
-    def update_delay(self, observation = None, ref_delay = -1):
+    def update_delay(self, observation = None, delay_info:dict = {}):
         '''
         Placeholder implementation
 
         In DL-MAC, this interface is not strictly required; it is kept here only 
         for compatibility with the training workflow in main.py.
         '''
+        ref_delay = delay_info.get('actual_delay', -1)
         if ref_delay != self._delay:
             self._delay = ref_delay
             print(f'[Info] Agent DL-MAC at steps {self.t}, updates delay information to {ref_delay}.')

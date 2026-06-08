@@ -17,6 +17,8 @@ class DRLMAC(BaseMAC):
         measured_delay = self._node.delay
         time_slot = self._node._t
         self._beacons[time_slot + 2*measured_delay] = measured_delay
+        print(f'[Info] Agent requests delay information at steps {time_slot}, '
+              f'expects to receive beacon at steps {time_slot + 2*measured_delay} with delay {measured_delay}.')
     
     @property
     def measured_delay(self):
