@@ -5,47 +5,6 @@ from infra.environment import OBS_ORDER
 import copy
 import torch
 
-class JudiciousReplayMemory(ReplayMemory):
-    def __init__(self, memory_size, state_size, device):
-        super().__init__(memory_size, state_size, device)
-
-    def reset(self):
-        super().reset()
-        self._memory_delay = torch.zeros((self._memory_size,), dtype=torch.int, device=self._device)
-        self._delay_max = -1
-
-    def push(self, state, action, reward, next_state, delay):
-        self._update_delay_boundary(delay)
-        idx = self._memory_counter % self._memory_size
-        self._memory_delay[idx] = delay
-        super().push(state, action, reward, next_state)
-
-    def sample(self, batch_size):
-        '''
-        DR-DLMA Component: Judicious Experience Replay
-        '''
-        # Generate random indices
-        current_count = min(self._memory_counter, self._memory_size)
-        valid_count = current_count - self._delay_max * 2
-        first_idx = self._memory_counter % self._memory_size if self._memory_counter >= self._memory_size else 0
-        random_offsets = torch.randperm(valid_count, device=self._device)[:batch_size]
-        idxs = (random_offsets + first_idx) % self._memory_size
-
-        # Construct aligned transitions (St, At, Rt+2D+1, St+2D+1)
-        samples = self._memory[idxs, :]
-        samples_2D = self._memory[(idxs + 2 * self._memory_delay[idxs]) % self._memory_size, :]
-        states = samples[:, :self._state_size]
-        actions = samples[:, self._state_size].long()
-        rewards = samples_2D[:, self._state_size + 1].unsqueeze(-1) # (batch_size, 1)
-        next_states = samples_2D[:, -self._state_size:]
-
-        return states, actions, rewards, next_states
-    
-    def _update_delay_boundary(self, delay):
-        if self._delay_max == -1 and delay >= 0:
-            self._memory_delay[:self._memory_counter] = delay
-        self._delay_max = max(self._delay_max, delay)
-
 class DRDLMA(BaseAgent):
     '''
     DR-DLMA mac protocol
@@ -183,3 +142,44 @@ class DRDLMA(BaseAgent):
                 self._need_training = True
         change_flag = is_need != self._need_training
         return is_need, change_flag
+
+class JudiciousReplayMemory(ReplayMemory):
+    def __init__(self, memory_size, state_size, device):
+        super().__init__(memory_size, state_size, device)
+
+    def reset(self):
+        super().reset()
+        self._memory_delay = torch.zeros((self._memory_size,), dtype=torch.int, device=self._device)
+        self._delay_max = -1
+
+    def push(self, state, action, reward, next_state, delay):
+        self._update_delay_boundary(delay)
+        idx = self._memory_counter % self._memory_size
+        self._memory_delay[idx] = delay
+        super().push(state, action, reward, next_state)
+
+    def sample(self, batch_size):
+        '''
+        DR-DLMA Component: Judicious Experience Replay
+        '''
+        # Generate random indices
+        current_count = min(self._memory_counter, self._memory_size)
+        valid_count = current_count - self._delay_max * 2
+        first_idx = self._memory_counter % self._memory_size if self._memory_counter >= self._memory_size else 0
+        random_offsets = torch.randperm(valid_count, device=self._device)[:batch_size]
+        idxs = (random_offsets + first_idx) % self._memory_size
+
+        # Construct aligned transitions (St, At, Rt+2D+1, St+2D+1)
+        samples = self._memory[idxs, :]
+        samples_2D = self._memory[(idxs + 2 * self._memory_delay[idxs]) % self._memory_size, :]
+        states = samples[:, :self._state_size]
+        actions = samples[:, self._state_size].long()
+        rewards = samples_2D[:, self._state_size + 1].unsqueeze(-1) # (batch_size, 1)
+        next_states = samples_2D[:, -self._state_size:]
+
+        return states, actions, rewards, next_states
+    
+    def _update_delay_boundary(self, delay):
+        if self._delay_max == -1 and delay >= 0:
+            self._memory_delay[:self._memory_counter] = delay
+        self._delay_max = max(self._delay_max, delay)

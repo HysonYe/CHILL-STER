@@ -1,5 +1,6 @@
 from uwan.mac.base_mac import BaseMAC
 from infra.environment import ACK_STATE, MacReturn, AckFrameInfo
+
 class DRLMAC(BaseMAC):
     def __init__(self):
         super().__init__(protocol_type='AGENT')
