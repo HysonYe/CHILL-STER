@@ -99,6 +99,10 @@ class CHILLReturn:
         Returns:
             weights (torch.Tensor): Importance sampling weights, shape (batch_size, 1), where w_i = min( ρ^β, 1 ).
         '''
+        if self._beta == 0:
+            weights = torch.ones((old_probs.size(0), 1), device=old_probs.device)
+            return weights
+        
         old_traj_probs = self._compute_traj_probs(old_probs, masks)
         new_traj_probs = self._compute_traj_probs(new_probs, masks)
         default_w = (new_traj_probs - old_traj_probs).exp()
