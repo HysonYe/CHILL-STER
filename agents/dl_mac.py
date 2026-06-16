@@ -111,7 +111,8 @@ class DLMAC(BaseAgent):
         # Decision making
         _eps = self._brain._eps
         s = torch.tensor(states, dtype=torch.float32, device=self._device)
-        acts, q_values = self._brain.choose_action(s)
+        acts, sa_v = self._brain.choose_action(s)
+        q_values = sa_v[torch.arange(sa_v.size(0)), acts]
         delay_slot = self.t % self._decision_interval
         if delay_slot == 0:
             self._tx_delay = acts[0].item()

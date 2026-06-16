@@ -90,7 +90,8 @@ class DRDLMA(BaseAgent):
         probs = [0] # NOTE: Placeholder implementation
 
         s = torch.tensor(states, dtype=torch.float32, device=self._device)
-        acts, q_values = self._brain.choose_action(s)
+        acts, sa_v = self._brain.choose_action(s)
+        q_values = sa_v[torch.arange(sa_v.size(0)), acts]
         return acts, probs, q_values
 
     def save_checkpoint(self, path):

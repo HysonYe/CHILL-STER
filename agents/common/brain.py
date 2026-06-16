@@ -79,15 +79,14 @@ class DQN():
             with torch.autocast(device_type=self._device_name, dtype=self._amp_dtype):
                 sa_v = self._model(state)
 
-        optimal_q_values, optimal_act = torch.max(sa_v, dim=1)
         if np.random.random() < self._eps:
             actions = torch.randint(0, self._n_actions, (self._n_nodes,),
                                     device=self._net_device, dtype=torch.int)
-            optimal_q_values = sa_v[torch.arange(self._n_nodes), actions]
         else:
+            _, optimal_act = torch.max(sa_v, dim=1)
             actions = optimal_act
         self._eps = max(self._eps_min, self._eps * self._eps_decay)
-        return actions, optimal_q_values
+        return actions, sa_v
 
     def _replace_target_params(self):
         weights = self._model.state_dict()
