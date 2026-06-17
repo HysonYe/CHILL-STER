@@ -82,7 +82,7 @@ class DRDLMA(BaseAgent):
         next_state = copy.deepcopy(self._state)
         return next_state
         
-    def store_transition(self, state, action, reward, next_state, prob, observation):
+    def store_transition(self, state, action, reward, next_state, prob):
         self._record_reward.append(reward)
         self._memory.push(state, action, reward, next_state, self._delay)
 

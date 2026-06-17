@@ -98,7 +98,7 @@ class DLMAC(BaseAgent):
 
         return copy.deepcopy(self._state)
 
-    def store_transition(self, state, action, reward, next_state, prob, observation):
+    def store_transition(self, state, action, reward, next_state, prob):
         next_t = self.t + 1
         if next_t % self._decision_interval == 0:
             really_reward = self._reward_func(self._cur_obs[self._ack_idx:])

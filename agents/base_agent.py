@@ -34,7 +34,7 @@ class BaseAgent(ABC):
         pass
 
     @abstractmethod
-    def store_transition(self, state, action, reward, next_state, prob, observation):
+    def store_transition(self, state, action, reward, next_state, prob):
         pass
 
     @abstractmethod
