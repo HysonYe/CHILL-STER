@@ -166,6 +166,7 @@ class CHILLReturn:
                                tar_next_q_eval: torch.Tensor, masks: torch.Tensor):
         max_q, _ = torch.max(tar_q_eval, dim=1)
         next_max_q, _ = torch.max(tar_next_q_eval, dim=1)
+        assert rewards.shape == max_q.shape, f"Shape mismatch in sv_td_errs! rewards: {rewards.shape}, max_q: {max_q.shape}"
         sv_td_errs = rewards + self._gamma * next_max_q - max_q    # State-Value TD Error
         '''
         NOTE: Here we compute a state-value TD error. Because DQN uses an epsilon-greedy
@@ -188,7 +189,8 @@ class CHILLReturn:
                      target_next_q_eval: torch.Tensor,
                      old_probs: torch.Tensor, 
                      new_probs: torch.Tensor, 
-                     masks: torch.Tensor) -> torch.Tensor:
+                     masks: torch.Tensor,
+                     indices: torch.Tensor = None) -> torch.Tensor:
         """
         Forward pass for CHILL-Return, calculating the loss with importance sampling weights and finite-horizon returns.
         
@@ -215,6 +217,8 @@ class CHILLReturn:
         weights = self._compute_weights(old_probs, new_probs, masks)
 
         # Calculate final weighted squared loss
+        if indices is not None:
+            target_q, weights = target_q[indices], weights[indices]
         current_q = q_eval[batch_index, actions].view(-1, 1)
         td_errors = current_q - target_q.to(current_q.dtype)
         loss = (weights * td_errors.pow(2)).sum() / batch_size

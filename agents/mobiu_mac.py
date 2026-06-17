@@ -1,6 +1,6 @@
 from agents.base_agent import BaseAgent
 from agents.common.brain import DQN
-from infra.environment import OBS_ORDER
+from infra.environment import OBS_ORDER, NODE_ACT, ACK_STATE
 from infra.utils.tools import up_to_integer
 from chill_ster import CHILLReturn, STER, get_epsilon_greedy_dist
 from collections import deque
@@ -11,38 +11,45 @@ class MobiUMAC(BaseAgent):
     '''
     MobiU-MAC protocol
     '''
-    def __init__(self, obs_dims, obs_len, obs_space, n_actions, n_step, lamb, beta, importance_sampling, clip,
+    def __init__(self, obs_dims, obs_len, obs_space, n_actions, horizon, lamb, beta,
                 isa_est_wind, sub_eff_len, ster_radius, ster_decay = 0.95, memory_size = 500, batch_size = 32,
                 replace_target_iter = 200, learning_rate = 1e-3, gamma = 0.9, epsilon = 1, epsilon_min = 0.01, epsilon_decay = 0.995,
                 device = 'cuda'):
         super().__init__(gamma)
         # copy params
         self._device = device.lower()
-        self._n_step = n_step
-        self._lambda = lamb
         self._gamma = gamma
         self._epsilon = epsilon
-        self._beta = beta
-        self._clip = clip
-        self._able_IS = importance_sampling
+        self._n_actions = n_actions
+        self._obs_dims, self._obs_len, self._obs_space = obs_dims, obs_len, obs_space
         self._memory_size = memory_size
         self._batch_size = batch_size
         self._isa_est_wind = isa_est_wind
         self._ster_decay = ster_decay
         self._ster_radius = ster_radius
         self._n_sub_traj_effective_len = sub_eff_len    # 经验回放中每条轨迹的有效长度，过短会导致样本计算效率过低，过长会导致样本独立性过低
-        self._n_actions = n_actions
-        self._obs_dims, self._obs_len, self._obs_space = obs_dims, obs_len, obs_space
+        self._horizon = horizon
+        self._lambda = lamb
+        self._beta = beta
 
         # Calculate state and action space dimensions
         self._ack_idx = OBS_ORDER.index('ack')
         self._one_hot_obs_dims = sum(obs_space)
         self._state_size = self._one_hot_obs_dims*self._obs_len
-        # self._brain = 
+        self._brain = CHILLDQN(self._state_size, self._n_actions, 1, replace_target_iter, learning_rate,
+                               gamma, epsilon, epsilon_min, epsilon_decay, horizon, lamb, beta, device=device)
         self.type = 'MobiU-MAC'
         self.reset()
 
     def reset(self):
+        rew_size = 1
+        self._eps_buffer = {}
+        self._default_anchor = -1
+        self._isa =  self._default_anchor
+        self._memory = STER(self._memory_size, self._state_size, rew_size, self._default_anchor,
+                            self._ster_radius, self._ster_decay, self._device)
+        self._state = [0.] * self._state_size
+        self._isa_estimator = ImplicitAnchorEstimator(self._horizon, self._isa_est_wind, NODE_ACT, ACK_STATE, OBS_ORDER)
         self.t = 0
 
     def update_delay(self, observation = None, ref_delay = -1):
@@ -68,7 +75,7 @@ class CHILLDQN(DQN):
         self, state_dims, n_actions, n_nodes,
         replace_target_iter=200, learning_rate=1e-3, gamma=0.9,
         epsilon=1., epsilon_min=0.01, epsilon_decay=0.995,
-        horizon=10, lamb=0.95, beta=0.2,  # CHILL-Return 特有参数
+        horizon=10, lamb=0.95, beta=0.2,  # CHILL-Return specific parameters
         device='cuda'
     ):
         super().__init__(
@@ -97,32 +104,43 @@ class CHILLDQN(DQN):
         log_probs = dist.log_prob(acts)
         
         return acts, log_probs, sa_v
+    
+    def compute_current_probs(self, states, actions, epsilons):
+        # NOTE: compute current policy log probabilities (new_probs) for the given actions
+        self._model.eval()
+        with torch.amp.autocast(device_type=self._device_name, dtype=self._amp_dtype):
+            with torch.no_grad():
+                sa_v = self._model(states)
+                _, optimal_act = torch.max(sa_v, dim=1)
+                dist = get_epsilon_greedy_dist(self._n_actions, epsilons, optimal_act, self._net_device)
+                log_probs = dist.log_prob(actions)
+                return log_probs
 
-    def learn(self, states, actions, rewards, next_states, old_probs, masks):
+    def learn(self, states, actions, rewards, next_states, old_probs, new_probs, masks, indices=None):
         self._model.train()
         self._learn_step += 1
-        batch_size = states.size(0)
+        states_train, actions_train = states, actions
+        if indices is not None: states_train, actions_train = states[indices], actions[indices]
+
         with torch.amp.autocast(device_type=self._device_name, dtype=self._amp_dtype):
-            q_eval = self._model(states)
+            q_eval_train = self._model(states_train)
             with torch.no_grad():
+                batch_size_full = states.size(0)
                 combined_states = torch.cat([states, next_states], dim=0)
                 combined_target_q = self._target_model(combined_states)
-                target_q_eval = combined_target_q[:batch_size]
-                target_next_q_eval = combined_target_q[batch_size:]
-                _, optimal_act = torch.max(q_eval, dim=1)
-                epsilons = torch.full((batch_size,), self._eps, device=self._net_device)
-                dist = get_epsilon_greedy_dist(self._n_actions, epsilons, optimal_act, self._net_device)
-                new_probs = dist.log_prob(actions)
+                target_q_eval = combined_target_q[:batch_size_full]
+                target_next_q_eval = combined_target_q[batch_size_full:]
 
             q_loss = self._chill_return.forward_loss(
-                q_eval=q_eval,
-                actions=actions,
+                q_eval=q_eval_train,
+                actions=actions_train,
                 rewards=rewards,
                 target_q_eval=target_q_eval,
                 target_next_q_eval=target_next_q_eval,
                 old_probs=old_probs,
                 new_probs=new_probs,
-                masks=masks
+                masks=masks,
+                indices=indices
             )
 
         self._optimizer.zero_grad(set_to_none=True)
