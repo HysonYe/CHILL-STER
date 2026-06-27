@@ -106,7 +106,11 @@ class MobiUMAC(BaseAgent):
         self._brain.save(path)
 
     def learn(self):
-        pass
+        states, actions, rewards, next_states, probs, new_probs, masks, indices = self._sample()
+        if len(states) > 0:
+            loss_info = self._brain.learn(states, actions, rewards, next_states, probs, new_probs, masks, indices)
+            return loss_info
+        return None
 
     def _sample(self):
         n_sampling_len = self._n_sub_traj_effective_len + self._horizon - 1
