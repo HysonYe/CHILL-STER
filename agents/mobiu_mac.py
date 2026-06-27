@@ -4,7 +4,7 @@ from infra.environment import OBS_ORDER, NODE_ACT, ACK_STATE
 from infra.utils.tools import up_to_integer
 from chill_ster import CHILLReturn, STER, get_epsilon_greedy_dist
 from collections import deque
-import torch
+import torch, copy
 import numpy as np
 
 class MobiUMAC(BaseAgent):
@@ -27,7 +27,7 @@ class MobiUMAC(BaseAgent):
         self._isa_est_wind = isa_est_wind
         self._ster_decay = ster_decay
         self._ster_radius = ster_radius
-        self._n_sub_traj_effective_len = sub_eff_len    # 经验回放中每条轨迹的有效长度，过短会导致样本计算效率过低，过长会导致样本独立性过低
+        self._n_sub_traj_effective_len = sub_eff_len
         self._horizon = horizon
         self._lambda = lamb
         self._beta = beta
@@ -53,23 +53,86 @@ class MobiUMAC(BaseAgent):
         self.t = 0
 
     def update_delay(self, observation = None, ref_delay = -1):
-        pass
+        isa = self._isa
+        
+        if self._isa_est_wind > 0 and observation is not None:
+            est_isa = self._isa_estimator.push(observation)
+            if est_isa is not None:
+                if abs(self._isa - est_isa) <= 1 or self._isa == -1:
+                    isa = est_isa
+        elif self._isa_est_wind == 0:
+            isa = ref_delay
+
+        if isa not in self._eps_buffer:
+            self._eps_buffer[isa] = self._epsilon
+
+        if isa != self._isa:
+            print(f"[Info] Time step {self.t}: ISA updated from {self._isa} to {isa}.")
+            pre_isa = self._isa
+            self._isa = isa
+            if pre_isa != self._default_anchor:
+                self._eps_buffer[pre_isa] = self._brain._eps
+                self._brain._eps = self._eps_buffer[isa]
 
     def build_state(self, observation = None):
-        pass
+        if observation is None: return copy.deepcopy(self._state)
+
+        # Convert state to one-hot encoding
+        one_hot = []
+        for idx, dim in zip(observation, self._obs_space):
+            v = [0] * dim
+            v[idx] = 1
+            one_hot.extend(v)
+        self._state = self._state[self._one_hot_obs_dims:]+one_hot
+        next_state = copy.deepcopy(self._state)
+        return next_state
     
-    def store_transition(self, state, action, reward, next_state, prob, observation):
-        pass
+    def store_transition(self, state, action, reward, next_state, prob):
+        transition = {
+            'state': state,
+            'action': action,
+            'reward': reward,
+            'next_state': next_state
+        }
+        self._memory.push(transition, prob, self._isa)
 
     def choose_action(self, states):
-        pass
+        s = torch.tensor(states, dtype=torch.float32, device=self._device)
+        acts, log_probs, sa_v = self._brain.choose_action(s)
+        q_values = sa_v[torch.arange(sa_v.size(0)), acts]
+        return acts, log_probs, q_values
 
     def save_checkpoint(self, path):
-        pass
+        self._brain.save(path)
 
     def learn(self):
         pass
 
+    def _sample(self):
+        n_sampling_len = self._n_sub_traj_effective_len + self._horizon - 1
+        useful_len = self._n_sub_traj_effective_len
+        batch_size = self._batch_size // useful_len
+        trajs_num, anchors, transitions, probs, masks = self._memory.sample(batch_size, n_sampling_len)
+        states, actions, rewards, next_states = transitions['states'], transitions['actions'],\
+                                                transitions['rewards'], transitions['next_states']
+        
+        # Compute new_probs for the sampled transitions
+        self._eps_buffer[self._isa] = self._brain._eps
+        if anchors[0] == self._default_anchor:
+            eps_array = np.full_like(anchors, self._eps_buffer[self._default_anchor], dtype=float)
+        else:
+            max_key = max(self._eps_buffer.keys())
+            lookup_table = np.zeros(max_key + 1)
+            for key, value in self._eps_buffer.items(): lookup_table[key] = value
+            eps_array = lookup_table[anchors]
+        new_probs = self._brain.compute_current_probs(states, actions, eps_array)
+
+        # Compute indices for sub-trajectory sampling
+        offsets = torch.arange(trajs_num, device=self._device).view(-1, 1) * n_sampling_len          
+        local_indices = torch.arange(useful_len, device=self._device).view(1, -1)                    
+        indices = (offsets + local_indices).view(-1)
+        return states, actions, rewards, next_states, probs, new_probs, masks, indices
+    
 class CHILLDQN(DQN):
     def __init__(
         self, state_dims, n_actions, n_nodes,
